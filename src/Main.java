@@ -3,6 +3,8 @@ import java.util.Scanner;
 import java.util.HashMap;
 public class Main {
 	
+	//TODO use Strings in HashMap and throughout the project instead of Characters
+	
 	public static void main(String[] args) {
 		
 	}
