@@ -11,34 +11,35 @@ public class Main {
 	
 	public static String toPostfix(String exp) {
 		Scanner infix = new Scanner(exp);
-		Stack<Character> convert = new Stack<>();
-		HashMap<Character, Integer> operators = new HashMap<>();
-		operators.put('+', 1);
-		operators.put('-', 1);
-		operators.put('/', 2);
-		operators.put('*', 2);
-		operators.put('%', 2);
-		operators.put('^', 3);
+		Stack<String> convert = new Stack<>();
+		HashMap<String, Integer> operators = new HashMap<>();
+		operators.put("+", 1);
+		operators.put("-", 1);
+		operators.put("/", 2);
+		operators.put("*", 2);
+		operators.put("%", 2);
+		operators.put("^", 3);
+                
 		String postfix = "";
 		
-		String token;
-		char op;
-		char stackOp;
+		
+		String op;
+		String stackOp;
 		while (infix.hasNext()) {
-			token = infix.next();
-			op = token.charAt(0);
+			op = infix.next();
 			
-			if (Character.isDigit(op)) {
+			
+			if (isNumeric(op)) {
 				postfix += op + " ";
 			} else if (operators.containsKey(op)){
-				while (!convert.isEmpty() && operators.get(convert.peek()) >= operators.get(op)) {
-					postfix += convert.pop() + " ";
+				while (operators.containsKey(op) && !convert.isEmpty() && operators.containsKey(convert.peek()) && operators.get(convert.peek()) >= operators.get(op)) {
+					postfix += convert.pop() + " ";     
 				}
 				convert.push(op);
-			} else if (op == '(') {
+			} else if (op.equals("(")) {
 				convert.push(op);
-			} else if (op == ')') {
-				while (!convert.isEmpty() && convert.peek() != '(') {
+			} else if (op.equals(")")) {
+				while (!convert.isEmpty() && !convert.peek().equals("(")) {
 					postfix += convert.pop() + " ";
 				}
 				convert.pop();
@@ -53,5 +54,16 @@ public class Main {
 		
 		
 	}
+        
+        public static boolean isNumeric(String number) {
+            try {
+                double num = Double.parseDouble(number);
+            } catch (NumberFormatException | NullPointerException e) {
+                return false;
+            }
+            
+            return true;
+            
+        }
 
 }
