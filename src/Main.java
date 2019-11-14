@@ -252,7 +252,7 @@ public class Main {
 			op = infix.next();
 			
 			if (isNumeric(op) && (infix.hasNext("s") || infix.hasNext("c") || infix.hasNext("t") || infix.hasNext("v") || infix.hasNext("asin")
-					|| infix.hasNext("acos") || infix.hasNext("atan") || infix.hasNext("|") || infix.hasNext("~") || infix.hasNext("!"))) {
+					|| infix.hasNext("acos") || infix.hasNext("atan") || infix.hasNext("|") || infix.hasNext("~"))) {
 				infix.close();
 				return "ERROR";
 			}
