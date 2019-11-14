@@ -256,6 +256,11 @@ public class Main {
 				infix.close();
 				return "ERROR";
 			}
+			
+			if (op.equals("!") && infix.hasNextDouble()) {
+				infix.close();
+				return "ERROR";
+			}
 
 			if (isFraction && isValidFraction(op)) {
 				postfix += op + " ";
