@@ -9,7 +9,11 @@ import java.util.ArrayList;
 
 /* Calculator Project - Abhinav Gopinath
  * NOTE: if using testCalc(), when calling calculate(), use false for the last two arguments (those are for fraction mode and Reverse Polish Notation)
- * 
+ * Features:
+ * - Additional Operations: Arctan, Arcsine, Arccosine, Factorial
+ * - Reverse Polish Notation (separate mode)
+ * - Fraction Mode (can only conduct Fraction operations in this mode) - also improper fractions only (NO mixed numbers)
+ * - Unlimited Operations (also respects Order of Operations)
  * 
  */
 
@@ -26,6 +30,7 @@ public class Main {
 		
 	}
 
+	// Welcomes User to Calculator, Gets Their Input, and Calculates It
 	public static void startCalc() {
 		Scanner input = new Scanner(System.in);
 		String expression = "", result = "";
@@ -34,18 +39,23 @@ public class Main {
 
 		System.out.println("Welcome to Calculator!");
 		while (true) {
-			System.out.println("Enter an expression (RPN to change to RPN mode or normal to change back) (help for a list of options): ");
+			System.out.println("Enter an expression: ");
+			System.out.println("Or RPN (to switch to RPN mode), f (to switch to fraction mode), or normal (to switch to normal mode)");
+			System.out.print("Enter help for help -");
 			
+			// Displays Current Mode
 			if (isRPN) {
                 System.out.println("Current Mode: RPN");
             } else if (isFraction) {
-                System.out.println("Current Mode: Fraction - Note: Do Not Enter Spaces In Fractions");
+                System.out.println("Current Mode: Fraction - Note: Follow this Format: a/b (no spaces in between numerator, denominator, and slash)");
             } else {
                 System.out.println("Current Mode: Normal");
             }
 			
+			// Accepts User's Expression
 			expression = input.nextLine();
 			
+			// Changes Mode According to User's Input
 			if (expression.toLowerCase().trim().equals("rpn")) {
                 isRPN = true;
                 isFraction = false;
@@ -63,13 +73,16 @@ public class Main {
                 continue;
             }
 			
+			// Displays Help
 			if (expression.toLowerCase().trim().equals("help")) {
 				help();
 				continue;
 			}
 			
+			// Calculates the Result of the Expression 
 			result = calculate(expression, isRPN, isFraction);
 
+			// Displays Result
 			if (result.equals("ERROR")) {
 				System.out.println("There was an error.");
 			} else if (result.equals("quit")) {
@@ -82,15 +95,20 @@ public class Main {
 		input.close();
 	}
 
+	/*Takes an Expression in Postfix notation and Calculates The Result - 
+	/*This way, the calculator doesn't have to deal w/ parenthesis or order of operations 
+	/*after it is converted into postfix notation*/
 	public static String calculate(String exp, boolean isRPN, boolean isFraction) {
+		// If User enters Quit, then it returns quit
 		if (exp.toLowerCase().equals("quit")) {
 			return "quit";
 		}
 
+		// If the Calculator is not in RPN mode, it converts the expression 
 		if (!isRPN) {
 			exp = toPostfix(exp, isFraction);
 		}
-		
+		// If there is an error in the expression, ERROR is returned
 		if (exp.equals("ERROR")) return "ERROR";
 
 		Stack<String> calc = new Stack<>();
@@ -100,9 +118,18 @@ public class Main {
 		double num1 = 0, num2 = 0;
 		String op = "";
 		String result = "";
+		
+		// Parses string, calculates as RPN
+		
+		/* Method Pushes Fractions or Numbers onto Stack. Once operator is found, it returns the result of the operators
+		 * and operand, then pushes the result back into the loop. This process repeats until the expression
+		 * doesn't have any more tokens remaining. 
+		 * Returns the final result at the end
+		 */
 		while (tokenizer.hasNext()) {
 			num = tokenizer.next();
 			
+			// If Fraction Mode is On, Then it treats the tokens as members of Fraction class, rather than Numbers.
 			if (isFraction) {
                 Fraction f1, f2;
                 int numerator, denominator;
@@ -166,8 +193,10 @@ public class Main {
                     }
 
                     if (num2 != 0) {
+                    	// Two Operand Operation
                         result = operate(num1, num2, op);
                     } else {
+                    	// One Operand Operation
                         result = operate(num1, op);
                     }
                     calc.push(result);
@@ -184,9 +213,11 @@ public class Main {
 		return result;
 	}
 
+	// Converts Expression to Postfix notation, so it can be calculated like RPN and doesn't have to worry about order of operations or parenthesis
 	public static String toPostfix(String exp, boolean isFraction) {
 		Scanner infix = new Scanner(exp);
 		Stack<String> convert = new Stack<>();
+		// Creates map of operands and their respective precedences
 		HashMap<String, Integer> operators = new HashMap<>();
 		operators.put("+", 1);
 		operators.put("-", 1);
@@ -207,6 +238,15 @@ public class Main {
 
 		String postfix = "";
 
+		/* Loop Parses Expression until it has no more tokens.
+		 * If the token is a number or fraction, it will add it to the result string. If the token is an operator, it pops the operators that
+		 * are already in the stack and of a equal/higher precedence to the result string (if there are any). It then pushes that token onto the stack. 
+		 * If the token is an open parenthesis, then it pushes all the following tokens onto the stack (b/c they have a higher precedence) until
+		 * it reaches a closed parenthesis. Once it reaches, the closed parenthesis, the parenthetical token has been parsed and it gets popped
+		 * from the stack into the result string.
+		 * The result string is returned at the end.
+		 * If an error occurs at any time in this process, an error is returned
+		 */
 		String op;
 		while (infix.hasNext()) {
 			op = infix.next();
@@ -252,6 +292,7 @@ public class Main {
 
 	}
 
+	// returns the result of a two operand operation
 	public static String operate(double a, double b, String op) {
 		switch (op) {
 		case "+":
@@ -259,10 +300,12 @@ public class Main {
 		case "-":
 			return "" + (b - a);
 		case "/":
+			if (a == 0) return "ERROR";
 			return "" + (b / a);
 		case "*":
 			return "" + (a * b);
 		case "%":
+			if (a == 0) return "ERROR";
 			return "" + (b % a);
 		case "^":
 			return "" + Math.pow(b, a);
@@ -272,7 +315,7 @@ public class Main {
 		return "ERROR";
 	}
 
-	
+	// returns the result of a one operand operation
 	public static String operate(double a, String op) {
 		switch (op) {
 		case "~":
@@ -303,7 +346,7 @@ public class Main {
 		return "ERROR";
 	}
 	
-	
+	// returns the factorial of a number
 	public static int factorial(int n, int[] memo) {
 		int result;
 		if (memo[n] != 0) return memo[n];
@@ -317,6 +360,7 @@ public class Main {
 		return result;
 	}
 
+	// checks if a number is numeric
 	public static boolean isNumeric(String number) {
 		try {
 			double num = Double.parseDouble(number);
@@ -328,6 +372,7 @@ public class Main {
 
 	}
 	
+	// Utilizes Fraction class to perform operations of Fraction objects
 	public static String fractionOperate(Fraction f1, Fraction f2, String op) {
         switch (op) {
             case "+":
@@ -343,28 +388,33 @@ public class Main {
         }
     }
 	
+	// Checks if a fraction matches the format (a/b)
 	public static boolean isValidFraction(String fraction) {
         return fraction.matches("(\\d+)(\\/)(\\d+)");
     }
 	
+	// finds numerator of a fraction
 	public static int findNumerator(String fraction) {
         String num = fraction.substring(0, fraction.indexOf("/"));
         return Integer.parseInt(num);
     }
 
+	// finds denominator of a fraction
     public static int findDenominator(String fraction) {
         String num = fraction.substring(fraction.indexOf("/") + 1, fraction.length());
         return Integer.parseInt(num);
     }
 	
-	public static String operandType(String operand) {
-		if (operand.equals("+") || operand.equals("-") || operand.equals("*") || operand.equals("/") || operand.equals("%") ||
-				operand.equals("^")) {
+    // returns if an operator is a single or double operand operator
+	public static String operandType(String operator) {
+		if (operator.equals("+") || operator.equals("-") || operator.equals("*") || operator.equals("/") || operator.equals("%") ||
+				operator.equals("^")) {
 			return "double";
 		}
 		return "single";
 	}
 
+	// prints a list of operations that the calculator can perform
 	public static void help() {
 		System.out.println("These are all the operations supported by the Calculator:");
 		System.out.println("Addition (+)");
@@ -442,6 +492,7 @@ public class Main {
 }
 
 
+// Fraction Class: Fraction Instance has 2 fields: numerator (int) and denominator (int)
 class Fraction {
 
 	private int numerator;
@@ -452,7 +503,7 @@ class Fraction {
 		this.denominator = denominator;
 	}
 
-	// Printing Methods
+	// Printing Methods - Returns Fraction in String Format
 	private static String fractionToString(Fraction fraction) {
 		if (wholeNumberCheck(fraction) > 0) {
 			return Integer.toString(wholeNumberCheck(fraction));
@@ -461,6 +512,7 @@ class Fraction {
 	}
 
 	// Operation Methods
+	// Multiplies fractions
 	public static String multiply(Fraction fraction, Fraction fraction2) {
 		int newNumerator = fraction2.getNumerator() * fraction.getNumerator();
 		int newDenominator = fraction2.getDenominator() * fraction.getDenominator();
@@ -470,6 +522,7 @@ class Fraction {
 		return fractionToString(fraction3);
 	}
 
+	// Divides Fractions
 	public static String divide(Fraction fraction, Fraction fraction2) {
 		int newNumerator = fraction.getNumerator() * fraction2.getDenominator();
 		int newDenominator = fraction.getDenominator() * fraction2.getNumerator();
@@ -479,6 +532,7 @@ class Fraction {
 		return fractionToString(fraction3);
 	}
 	
+	// Adds Fractions
 	public static String add(Fraction fraction, Fraction fraction2) {
 		int commonDenominator = lcm(fraction, fraction2);
 		int newNumerator = fraction.getNumerator() * (commonDenominator / fraction.getDenominator());
@@ -491,6 +545,7 @@ class Fraction {
 		
 	}
 	
+	// Subtracts Fractions
 	public static String subtract(Fraction fraction, Fraction fraction2) {
 		int commonDenominator = lcm(fraction, fraction2);
 		int newNumerator = fraction.getNumerator() * (commonDenominator / fraction.getDenominator());
@@ -503,6 +558,7 @@ class Fraction {
 	}
 	
 	// Operation Helpers
+	// Checks if a fraction can be simplified to a whole number. If so, it returns the simplified fraction.
 	private static int wholeNumberCheck(Fraction fraction) {
 		int newFraction = 0;
 		if (fraction.getNumerator() % fraction.getDenominator() == 0) {
@@ -511,6 +567,7 @@ class Fraction {
 		return newFraction;
 	}
 	
+	// Simplifies Fraction
 	private static void simplify(Fraction fraction) {
 		int gcd = gcd(fraction);
 		
@@ -522,6 +579,7 @@ class Fraction {
 		}
 	}
 
+	//Finds greatest common divisor of numerator and denominator of fraction to help simplify fraction
 	private static int gcd(Fraction fraction) {
 		int numerator = fraction.getNumerator();
 		int denominator = fraction.getDenominator();
@@ -545,6 +603,7 @@ class Fraction {
 		return gcd;
 	}
 	
+	// finds least common multiple of 2 fractions' denominators in order to help w/ addition and subtraction
 	private static int lcm(Fraction fraction, Fraction fraction2) {
 		int denominator = fraction.getDenominator();
 		int denominator2 = fraction2.getDenominator();
