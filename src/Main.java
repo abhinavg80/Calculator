@@ -3,11 +3,26 @@ import java.util.Scanner;
 import java.util.HashMap;
 import java.lang.Math;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+
+/* Calculator Project - Abhinav Gopinath
+ * NOTE: if using testCalc(), when calling calculate(), use false for the last two arguments (those are for fraction mode and Reverse Polish Notation)
+ * 
+ * 
+ */
+
 public class Main {
 
 	
 	public static void main(String[] args) {
 		startCalc();
+		try {
+			testCalc();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 		
 	}
 
@@ -31,24 +46,24 @@ public class Main {
 			
 			expression = input.nextLine();
 			
-			if (expression.toLowerCase().equals("rpn")) {
+			if (expression.toLowerCase().trim().equals("rpn")) {
                 isRPN = true;
                 isFraction = false;
                 System.out.println("Mode changed to RPN");
                 continue;
-            } else if (expression.toLowerCase().equals("normal")) {
+            } else if (expression.toLowerCase().trim().equals("normal")) {
                 isRPN = false;
                 isFraction = false;
                 System.out.println("Mode changed to Normal");
                 continue;
-            } else if (expression.toLowerCase().equals("f")) {
+            } else if (expression.toLowerCase().trim().equals("f")) {
                 isFraction = true;
                 isRPN = false;
                 System.out.println("Mode changed to Fraction");
                 continue;
             }
 			
-			if (expression.toLowerCase().equals("help")) {
+			if (expression.toLowerCase().trim().equals("help")) {
 				help();
 				continue;
 			}
@@ -195,6 +210,12 @@ public class Main {
 		String op;
 		while (infix.hasNext()) {
 			op = infix.next();
+			
+			if (isNumeric(op) && (infix.hasNext("s") || infix.hasNext("c") || infix.hasNext("t") || infix.hasNext("v") || infix.hasNext("asin")
+					|| infix.hasNext("acos") || infix.hasNext("atan") || infix.hasNext("|") || infix.hasNext("~") || infix.hasNext("!"))) {
+				infix.close();
+				return "ERROR";
+			}
 
 			if (isFraction && isValidFraction(op)) {
 				postfix += op + " ";
@@ -242,7 +263,7 @@ public class Main {
 		case "*":
 			return "" + (a * b);
 		case "%":
-			return "" + (a % b);
+			return "" + (b % a);
 		case "^":
 			return "" + Math.pow(b, a);
 
@@ -255,19 +276,19 @@ public class Main {
 	public static String operate(double a, String op) {
 		switch (op) {
 		case "~":
-			return "" + Math.round(a);
+			return "" + (double) Math.round(a);
 		case "c":
-			return "" + Math.cos(Math.toRadians(a));
+			return "" + Math.cos(a);
 		case "s":
-			return "" + Math.sin(Math.toRadians(a));
+			return "" + Math.sin(a);
 		case "t":
-			return "" + Math.tan(Math.toRadians(a));
+			return "" + Math.tan(a);
 		case "acos":
-			return "" + Math.acos(Math.toRadians(a));
+			return "" + Math.acos(a);
 		case "asin":
-			return "" + Math.asin(Math.toRadians(a));
+			return "" + Math.asin(a);
 		case "atan":
-			return "" + Math.atan(Math.toRadians(a));
+			return "" + Math.atan(a);
 		case "v":
 			if (a < 0)
 				return "ERROR";
@@ -362,7 +383,61 @@ public class Main {
 		System.out.println("Arccos (acos)");
 		System.out.println("Arccos (acos)");
 		System.out.println("Factorial (!)");
+		System.out.println("Fraction Addition, Subtraction, Multiplication, and Division");
 	}
+	
+	public static void testCalc() throws FileNotFoundException{
+        ArrayList<String> problems = new ArrayList<>();
+        ArrayList<String> results = new ArrayList<>();
+        // load problems from a file
+        File fProblems = new File("problems.txt");
+        Scanner sc = new Scanner(fProblems);        
+        int count = 0;
+        String line = "";
+        int problemCount = 0;
+        int resultCount = 0;
+        while (sc.hasNextLine()){
+            line = sc.nextLine();
+            if (!line.startsWith("//") && !line.trim().equals("")){        // ignore comments at the beginning
+                problems.add(line.substring(3).trim());
+                problemCount++;
+                if (sc.hasNextLine()){
+                    line = sc.nextLine();
+                    if (!line.startsWith("//") && !line.trim().equals("")){
+                        results.add(line.substring(3).trim());
+                        resultCount++;
+                    }
+                } 
+                count++;
+            }
+        }
+        if (problemCount == resultCount){
+            // now run the tests
+            for (int i=0; i<problemCount; i++){
+                String prob = problems.get(i);
+                String result = calculate(prob, false, false);
+                if (result == null){
+                    System.out.println("FAILED test " + i);
+                    System.out.println("Expression: " + problems.get(i));
+                    System.out.println("Expected result: " + results.get(i));
+                    System.out.println("Actual: null String returned from calculate()");
+                } else {
+                    if (result.equals(results.get(i))){
+                        System.out.println("PASSED test " + i);
+                    } else {
+                        System.out.println("FAILED test " + i);
+                        System.out.println("Expression: " + problems.get(i));
+                        System.out.println("Expected result: " + results.get(i));
+                        System.out.println("Actual: " + result);
+                    }
+                }
+                    
+            }
+        } else {
+            System.out.println("problem file error");
+        }    
+            
+    }
 
 }
 
