@@ -2,7 +2,7 @@ import java.util.Stack;
 import java.util.Scanner;
 import java.util.HashMap;
 import java.lang.Math;
-
+import java.math.BigInteger;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -19,8 +19,10 @@ import java.util.ArrayList;
 
 public class Main {
 
+	private static HashMap<Integer, BigInteger> factorialsCache;
 	
 	public static void main(String[] args) {
+		initFact();
 		startCalc();
 		try {
 			testCalc();
@@ -345,24 +347,30 @@ public class Main {
 			return "" + Math.abs(a);
 		case "!":
 			if (a != Math.floor(a)) return "ERROR";
-			return "" + factorial((int) a, new int[(int) a + 1]);
+			return "" + factorial((int) a); // TODO: change
 		}
 
 		return "ERROR";
 	}
 	
 	// returns the factorial of a number
-	public static int factorial(int n, int[] memo) {
-		int result;
-		if (memo[n] != 0) return memo[n];
-		
-		if (n == 1) {
-			result = 1;
-		} else {
-			result = n * factorial(n - 1, memo);
+	public static BigInteger factorial(int n) {
+		if (factorialsCache.containsKey((n))) {
+			return factorialsCache.get(n);
 		}
-		memo[n] = result;
+		
+		BigInteger result = BigInteger.ONE;
+		for (int i = 1; i <= n; i++) {
+			result = result.multiply(BigInteger.valueOf(i));
+			factorialsCache.put(i, result);
+		}
 		return result;
+	}
+	
+	//Initializes Factorial Cache
+	public static void initFact() {
+		factorialsCache = new HashMap<>();
+		factorialsCache.put(0, BigInteger.valueOf(1));
 	}
 
 	// checks if a number is numeric
