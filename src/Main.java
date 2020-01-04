@@ -22,7 +22,6 @@ public class Main {
 	private static HashMap<Integer, BigInteger> factorialsCache;
 	
 	public static void main(String[] args) {
-		initFact();
 		startCalc();
 		try {
 			testCalc();
@@ -38,6 +37,8 @@ public class Main {
 		String expression = "", result = "";
 		boolean isRPN = false;
 		boolean isFraction = false;
+		
+		initFact();
 
 		System.out.println("Welcome to Calculator!");
 		while (true) {
@@ -347,7 +348,7 @@ public class Main {
 			return "" + Math.abs(a);
 		case "!":
 			if (a != Math.floor(a)) return "ERROR";
-			return "" + factorial((int) a); // TODO: change
+			return "" + factorial((int) a); 
 		}
 
 		return "ERROR";
